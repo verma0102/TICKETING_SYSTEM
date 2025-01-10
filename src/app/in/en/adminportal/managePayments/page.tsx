@@ -1,15 +1,22 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import styles from './managePayments.module.css';
-import { IClient, BillingHistory } from "@/mongodb/schemas/NewClientSchema";
+import { IBilling, BillingHistory } from "@/mongodb/schemas/billingSchema";
 import { jsPDF } from 'jspdf';
 
 const ManagePayments: React.FC = () => {
-    const [clients, setClients] = useState<IClient[]>([]);
-    const [selectedEmail, setSelectedEmail] = useState<string>('');
+    const [clients, setClients] = useState<IBilling[]>([]);
+    const [email, setEmail] = useState<string>('');
     const [dueDate, setDueDate] = useState<string>('');
     const [message, setMessage] = useState<string>('');
     const [subtotal, setSubtotal] = useState<number>(0);
+    const [billingHistory, setBillingHistory] = useState<BillingHistory>({
+        date: new Date(),
+        amount: 0,
+        message: '',
+        dueDate: new Date(),
+    });
+
 
     const fetchClients = async () => {
         try {
@@ -31,23 +38,82 @@ const ManagePayments: React.FC = () => {
         fetchClients();
     }, []);
 
-    const downloadInvoice = (client: IClient, history: BillingHistory) => {
+    const downloadInvoice = (client: IBilling, history: BillingHistory) => {
         const doc = new jsPDF();
         doc.setFontSize(12);
         doc.text(`Client Email: ${client.email}`, 10, 20);
-        doc.text(`Roles: ${client.roles.join(', ')}`, 10, 40);
-        doc.text(`Domain: ${client.domain}`, 10, 50);
-        doc.text(`Product: ${client.saasProductName}`, 10, 60);
         doc.text(`Date: ${history.date}`, 10, 70);
         doc.text(`Amount: $${history.amount.toFixed(2)}`, 10, 80);
         doc.text(`Message: ${history.message}`, 10, 90);
-        doc.save(`${history.invoiceId}.pdf`);
+        // doc.save(`${history.invoiceId}.pdf`);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log('bill raise');
-    }
+
+    // const handleSubmit = async (event: React.FormEvent) => {
+    //     event.preventDefault();
+    //     try {
+    //         const response = await fetch('/api/v1/billing', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+
+    //             body: JSON.stringify({
+    //                 email,
+    //                 billingHistory,
+    //             }),
+    //         });
+
+    //         if (!response.ok) {
+    //             const errorData = await response.json();
+    //             console.error(errorData.error || 'Unknown error occurred');
+    //             return;
+    //         }
+
+    //         const data = await response.json();
+    //         console.log('Billing record created:', data);
+    //     } catch (error) {
+    //         console.error('Error submitting billing:', error);
+    //     }
+    // };
+
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        if (!email || !billingHistory.amount || !billingHistory.message) {
+            console.log('Please fill in all required fields.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/v1/billing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email,
+                    billingHistory,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                // setError(errorData.error || 'An unknown error occurred.');
+                console.log('errorData', errorData);
+
+                return;
+            }
+
+            const data = await response.json();
+            // setSuccess('Billing record created successfully!');
+            console.log('Billing record created:', data);
+        } catch (error) {
+            console.error('Error submitting billing:', error);
+            // setError('Failed to submit billing data.');
+        }
+    };
+
+
     return (
         <div className={styles.adminDashboard}>
             <div className={styles.clientTable}>
@@ -58,8 +124,8 @@ const ManagePayments: React.FC = () => {
                     <div className={styles.formGroup}>
                         <label>Select Email</label>
                         <select
-                            value={selectedEmail}
-                            onChange={(e) => setSelectedEmail(e.target.value)}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                             className={styles.selectField}
                         >
@@ -175,3 +241,5 @@ const ManagePayments: React.FC = () => {
 };
 
 export default ManagePayments;
+
+
