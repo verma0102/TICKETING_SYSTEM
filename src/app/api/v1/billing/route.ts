@@ -1,56 +1,3 @@
-// import { NextRequest, NextResponse } from "next/server";
-// import { connectToDatabase } from "@/mongodb";
-// import { BillingModel } from "@/mongodb/schemas/billingSchema";
-// import { getUserAuth } from '@/lib/dbAuth';
-
-// export async function GET(request: NextRequest): Promise<NextResponse> {
-//     try {
-//         await connectToDatabase();
-//         const { searchParams } = new URL(request.url);
-//         const id = searchParams.get("id");
-//         if (!id) {
-//             return NextResponse.json({ error: "Billing ID is required" }, { status: 400 });
-//         }
-//         const billing = await BillingModel.findById(id);
-//         if (!billing) {
-//             return NextResponse.json({ error: "Billing not found" }, { status: 404 });
-//         }
-//         console.log('billingData....:', billing);
-
-//         return NextResponse.json(billing, { status: 200 });
-//     } catch (error) {
-//         console.error("Error fetching billing:", error);
-//         return NextResponse.json({ error: "Failed to fetch billing" }, { status: 500 });
-//     }
-// }
-
-// export async function POST(request: NextRequest): Promise<NextResponse> {
-//     try {
-//         const userAuth = await getUserAuth();
-//         if (!userAuth) {
-//             return NextResponse.json({ error: 'User authentication failed' }, { status: 401 });
-//         }
-//         await connectToDatabase();
-//         const { email, billingHistory } = await request.json();
-//         const { clientReferenceID } = userAuth;
-//         console.log('userAuth:', userAuth);
-
-//         const newBilling = new BillingModel({
-//             clientReferenceID,
-//             email,
-//             billingHistory: billingHistory || [],
-//         });
-
-//         await newBilling.save();
-
-//         console.log('newBilling:', newBilling);
-//         return NextResponse.json(newBilling, { status: 201 });
-//     } catch (error: any) {
-//         console.error("Error creating billing:", error);
-//         return NextResponse.json({ error: "Failed to create billing" }, { status: 500 });
-//     }
-// }
-
 import { NextRequest, NextResponse } from 'next/server';
 import { Billing } from '@/mongodb/schemas/billingSchema';
 import { connectToDatabase } from "@/mongodb";
@@ -74,6 +21,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             );
         }
         const { clientReferenceID } = userAuth;
+        console.log('userAuth:', userAuth);
+
         const newBilling = new Billing({
             clientReferenceID,
             email,
@@ -92,3 +41,43 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         );
     }
 }
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
+    try {
+        const userAuth = await getUserAuth();
+        console.log('userAuth:', userAuth);
+
+        if (!userAuth) {
+            return NextResponse.json(
+                { error: 'User authentication failed' },
+                { status: 401 }
+            );
+        }
+        const email = userAuth.email;
+        if (!email) {
+            return NextResponse.json(
+                { error: 'Authenticated user does not have an email' },
+                { status: 400 }
+            );
+        }
+        await connectToDatabase();
+        const billings = await Billing.find({ email });
+        if (!billings || billings.length === 0) {
+            return NextResponse.json(
+                { error: 'No billing records found for this email' },
+                { status: 404 }
+            );
+        }
+        console.log('billing:', billings);
+        return NextResponse.json(billings, { status: 200 });
+    } catch (error: any) {
+        console.error('Error fetching billing data:', error);
+        return NextResponse.json(
+            { error: 'Failed to fetch billing data' },
+            { status: 500 }
+        );
+    }
+}
+
+
+

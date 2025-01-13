@@ -1,13 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './page.module.css';
 import RButton from "@/childComponent/RButton";
-
-interface BillingHistory {
-  date: string;
-  amount: number;
-  status: string;
-}
+import { IBilling } from '@/mongodb/schemas/billingSchema';
 
 interface PaymentMethod {
   id: string;
@@ -22,27 +17,35 @@ interface Plan {
 }
 
 const Billing: React.FC = () => {
+  const [billingRecords, setBillingRecords] = useState<IBilling[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<Plan>({
     name: 'Starter',
     price: '$19.99',
     renewalDate: '2024-12-01',
   });
-  // const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-  //   { id: '1', name: 'Visa', lastFourDigits: '1234' },
-  //   { id: '2', name: 'MasterCard', lastFourDigits: '5678' },
-  // ]);
+
   const paymentMethods: PaymentMethod[] = [
     { id: '1', name: 'Visa', lastFourDigits: '1234' },
     { id: '2', name: 'MasterCard', lastFourDigits: '5678' },
   ]
-  // const [billingHistory, setBillingHistory] = useState<BillingHistory[]>([
-  //   { date: '2024-11-01', amount: 19.99, status: 'Paid' },
-  //   { date: '2024-10-01', amount: 19.99, status: 'Paid' },
-  // ]);
-  const billingHistory: BillingHistory[] = [
-    { date: '2024-11-01', amount: 19.99, status: 'Paid' },
-    { date: '2024-10-01', amount: 19.99, status: 'Paid' },
-  ]
+
+  useEffect(() => {
+    const fetchBillingRecords = async () => {
+      try {
+        const response = await fetch('/api/v1/billing');
+        if (!response.ok) {
+          throw new Error('Failed to fetch billing records');
+        }
+        const data: IBilling[] = await response.json();
+        setBillingRecords(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchBillingRecords();
+  }, []);
+
   const handleChangePlan = (plan: string) => {
     setSelectedPlan({
       name: plan,
@@ -105,18 +108,22 @@ const Billing: React.FC = () => {
         <table>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Status</th>
+              <th>clientReferenceID</th>
+              <th>Email</th>
+              <th>Due Date</th>
+              <th>Message</th>
+              <th>Subtotal</th>
             </tr>
           </thead>
           <tbody>
-            {billingHistory?.map((item, index) => {
+            {billingRecords?.map((item, index) => {
               return (
                 <tr key={index}>
-                  <td>{item.date}</td>
+                  <td>{item.clientReferenceID}</td>
+                  <td>{item.email}</td>
+                  <td>{new Date(item.dueDate).toLocaleDateString()}</td>
+                  <td>{item.message}</td>
                   <td>{item.amount}</td>
-                  <td>{item.status}</td>
                 </tr>
               )
             })}

@@ -8,7 +8,6 @@ export interface IBilling extends Document {
     message: string;
     dueDate: Date;
 }
-
 const billingSchema: Schema = new Schema(
     {
         clientReferenceID: {
@@ -50,4 +49,4 @@ const billingSchema: Schema = new Schema(
     { timestamps: true }
 );
 export const Billing: Model<IBilling> =
-    mongoose.models.Ticket || mongoose.model<IBilling>('Billing', billingSchema);
+    mongoose.models.Billing || mongoose.model<IBilling>('Billing', billingSchema);
