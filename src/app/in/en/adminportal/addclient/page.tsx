@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import styles from "./AddClientForm.module.css";
 
@@ -9,6 +8,9 @@ interface Client {
   serviceType: string;
   domain?: string;
   saasProductName?: string;
+  cinNumber: string;
+  gst: number;
+  address: string;
 }
 const Page = () => {
   const [formData, setFormData] = useState({
@@ -17,9 +19,12 @@ const Page = () => {
     serviceType: "",
     domain: "",
     saasProductName: "",
+    cinNumber: "",
+    gst: "",
+    address: "",
   });
 
-  const [clients, setClients] = useState([]); // State to hold client data
+  const [clients, setClients] = useState([]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -30,22 +35,24 @@ const Page = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       const res = await fetch("/api/v1/client", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
+      console.log('formData:', formData);
       if (res.ok) {
-        fetchClients(); // Refresh the client list
+        fetchClients();
         setFormData({
           email: "",
           companyName: "",
           serviceType: "",
           domain: "",
           saasProductName: "",
+          cinNumber: "",
+          gst: "",
+          address: "",
         });
       } else {
         const errorData = await res.json();
@@ -62,6 +69,8 @@ const Page = () => {
       const res = await fetch("/api/v1/client");
       const data = await res.json();
       setClients(data); // Populate the client state with fetched data
+      console.log('data:', data);
+
     } catch (error) {
       console.error("Error fetching clients:", error);
     }
@@ -76,28 +85,70 @@ const Page = () => {
       <div className={styles.Container}>
         <h1 className={styles.heading}>Add/Edit Client</h1>
         <form className={styles.Form} onSubmit={handleSubmit}>
+
+
           <div className={styles.formGroup}>
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-            />
+            <div className={styles.formGrid}>
+              <label htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+              />
+
+              <label htmlFor="companyName">Company Name</label>
+              <input
+                type="text"
+                id="companyName"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
           </div>
+
+
+
           <div className={styles.formGroup}>
-            <label htmlFor="companyName">Company Name</label>
+            <label htmlFor="cinNumber">cinNumber</label>
             <input
               type="text"
-              id="companyName"
-              name="companyName"
-              value={formData.companyName}
+              id="cinNumber"
+              name="cinNumber"
+              value={formData.cinNumber}
               onChange={handleInputChange}
               required
             />
           </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="address">Address</label>
+            <input
+              type="text"
+              id="address"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="gst">GST</label>
+            <input
+              type="number"
+              id="gst"
+              name="gst"
+              value={formData.gst}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="serviceType">Service Type</label>
             <select
@@ -160,16 +211,22 @@ const Page = () => {
               <th>Service Type</th>
               <th>Domain</th>
               <th>SaaS Product</th>
+              <th>Address</th>
+              <th>cinNumber</th>
+              <th>Gst</th>
             </tr>
           </thead>
           <tbody>
-            {clients.map((client: Client, index: number) => (
+            {clients?.map((client: Client, index: number) => (
               <tr key={index}>
                 <td>{client.email}</td>
                 <td>{client.companyName}</td>
                 <td>{client.serviceType}</td>
                 <td>{client.domain || "N/A"}</td>
                 <td>{client.saasProductName || "N/A"}</td>
+                <td>{client.cinNumber || "N/A"}</td>
+                <td>{client.gst || "N/A"}</td>
+                <td>{client.address || "N/A"}</td>
               </tr>
             ))}
           </tbody>

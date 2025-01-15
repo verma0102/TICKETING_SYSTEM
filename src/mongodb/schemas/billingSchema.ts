@@ -2,11 +2,9 @@ import mongoose, { Document, Schema, Model } from 'mongoose';
 
 export interface IBilling extends Document {
     clientReferenceID: string;
-    email: string;
+    companyName: string;
     date: Date;
     amount: number;
-    message: string;
-    dueDate: Date;
 }
 const billingSchema: Schema = new Schema(
     {
@@ -15,15 +13,9 @@ const billingSchema: Schema = new Schema(
             required: [true, 'Billing Reference ID is required.'],
         },
 
-        email: {
+        companyName: {
             type: String,
-            required: true,
-            unique: true,
-            validate: {
-                validator: (value: string) =>
-                    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-                message: "Invalid email format.",
-            },
+            required: [true, 'Company Name is required.'],
         },
 
         date: {
@@ -36,15 +28,7 @@ const billingSchema: Schema = new Schema(
             required: true,
         },
 
-        message: {
-            type: String,
-            required: true,
-        },
 
-        dueDate: {
-            type: Date,
-            required: true,
-        },
     },
     { timestamps: true }
 );

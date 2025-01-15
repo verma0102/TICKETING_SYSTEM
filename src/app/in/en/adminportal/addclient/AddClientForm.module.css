@@ -1,7 +1,7 @@
 .Container {
   max-width: 800px;
-  margin: 30px auto;
-  padding: 20px;
+  margin: 10px auto;
+  padding: 5px;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -9,10 +9,14 @@
 
 .heading {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   font-size: 24px;
   font-weight: bold;
   color: #333333;
+}
+
+.formGroup2{
+    
 }
 
 .Form {
@@ -35,7 +39,7 @@
 
 .formGroup input,
 .formGroup select {
-  padding: 12px;
+  padding: 8px;
   font-size: 16px;
   border: 1px solid #cccccc;
   border-radius: 6px;

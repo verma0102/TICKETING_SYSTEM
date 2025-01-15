@@ -13,8 +13,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             );
         }
         await connectToDatabase();
-        const { email, date, amount, message, dueDate } = await request.json();
-        if (!email || !date || !amount || !message || !dueDate) {
+        const { companyName, date, amount } = await request.json();
+        if (!companyName || !date || !amount) {
             return NextResponse.json(
                 { error: 'Missing required fields' },
                 { status: 400 }
@@ -25,11 +25,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         const newBilling = new Billing({
             clientReferenceID,
-            email,
+            companyName,
             date,
-            amount,
-            message,
-            dueDate,
+            amount
         });
         await newBilling.save();
         return NextResponse.json(newBilling, { status: 201 });
@@ -42,42 +40,45 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 }
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
-    try {
-        const userAuth = await getUserAuth();
-        console.log('userAuth:', userAuth);
+// export async function GET(request: NextRequest): Promise<NextResponse> {
+//     try {
+//         const userAuth = await getUserAuth();
+//         console.log('userAuth:', userAuth);
+//         if (!userAuth) {
+//             return NextResponse.json(
+//                 { error: 'User authentication failed' },
+//                 { status: 401 }
+//             );
+//         }
+//         const email = userAuth.email;
+//         console.log('email:', email);
+//         if (!email) {
+//             return NextResponse.json(
+//                 { error: 'Authenticated user does not have an email' },
+//                 { status: 400 }
+//             );
+//         }
+//         await connectToDatabase();
+//         const billings = await Billing.find({ email });
+//         console.log('billing:', billings);
 
-        if (!userAuth) {
-            return NextResponse.json(
-                { error: 'User authentication failed' },
-                { status: 401 }
-            );
-        }
-        const email = userAuth.email;
-        if (!email) {
-            return NextResponse.json(
-                { error: 'Authenticated user does not have an email' },
-                { status: 400 }
-            );
-        }
-        await connectToDatabase();
-        const billings = await Billing.find({ email });
-        if (!billings || billings.length === 0) {
-            return NextResponse.json(
-                { error: 'No billing records found for this email' },
-                { status: 404 }
-            );
-        }
-        console.log('billing:', billings);
-        return NextResponse.json(billings, { status: 200 });
-    } catch (error: any) {
-        console.error('Error fetching billing data:', error);
-        return NextResponse.json(
-            { error: 'Failed to fetch billing data' },
-            { status: 500 }
-        );
-    }
-}
+//         if (!billings || billings.length === 0) {
+//             return NextResponse.json(
+//                 { error: 'No billing records found for this email' },
+//                 { status: 404 }
+//             );
+//         }
+//         console.log('billing...:', billings);
+
+//         return NextResponse.json(billings, { status: 200 });
+//     } catch (error: any) {
+//         console.error('Error fetching billing data:', error);
+//         return NextResponse.json(
+//             { error: 'Failed to fetch billing data' },
+//             { status: 500 }
+//         );
+//     }
+// }
 
 
 

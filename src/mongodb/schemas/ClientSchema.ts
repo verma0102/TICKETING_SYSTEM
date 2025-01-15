@@ -12,6 +12,9 @@ export interface IClient extends Document {
   password: string;
   products?: string;
   roles: string[];
+  cinNumber: string;
+  gst: number;
+  address: string;
 }
 
 interface Client {
@@ -57,6 +60,16 @@ const clientSchema: Schema = new Schema({
       return this.serviceType === 'saasProduct';
     },
   },
+  gst: {
+    type: Number,
+    required: true,
+    min: [0, "GST must be a non-negative number."],
+  },
+  address: { 
+    type: String,
+    required: [true, "Address is required."],
+  },
+
   password: {
     type: String,
     required: [true, "Password is required."],

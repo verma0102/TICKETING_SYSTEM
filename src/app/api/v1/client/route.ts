@@ -16,8 +16,9 @@ export async function POST(request: NextRequest) {
     // await connectToDatabase();
     // Parse the request body
     const body = await request.json();
-    const { email, companyName, serviceType, domain, saasProductName } = body;
-
+    const { email, companyName, serviceType, domain, saasProductName, cinNumber, gst, address } = body;
+    console.log('body:',body);
+    
     // Validate mandatory fields
     if (!email || !companyName || !serviceType) {
       return NextResponse.json(
@@ -49,6 +50,9 @@ export async function POST(request: NextRequest) {
       saasProductName,
       clientReferenceID: email.split(".")[0] + Date.now(),
       password: CLIENT_PASSWORD,
+      cinNumber,
+      gst,
+      address,
     });
 
     if (newClient.email) {
@@ -57,6 +61,7 @@ export async function POST(request: NextRequest) {
         password: CLIENT_PASSWORD,
       })
     }
+    console.log('newClient:',newClient);
     return NextResponse.json(
       {
         message: "Client created Successfully",

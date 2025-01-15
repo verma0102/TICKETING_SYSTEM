@@ -3,13 +3,13 @@ import React, { useEffect, useState } from 'react';
 import styles from './page.module.css';
 import RButton from "@/childComponent/RButton";
 import { IBilling } from '@/mongodb/schemas/billingSchema';
+import { jsPDF } from "jspdf";
 
 interface PaymentMethod {
   id: string;
   name: string;
   lastFourDigits: string;
 }
-
 interface Plan {
   name: string;
   price: string;
@@ -27,7 +27,7 @@ const Billing: React.FC = () => {
   const paymentMethods: PaymentMethod[] = [
     { id: '1', name: 'Visa', lastFourDigits: '1234' },
     { id: '2', name: 'MasterCard', lastFourDigits: '5678' },
-  ]
+  ];
 
   useEffect(() => {
     const fetchBillingRecords = async () => {
@@ -55,11 +55,29 @@ const Billing: React.FC = () => {
   };
 
   const handleCancelPlan = () => {
-    alert('Your plan has been canceled.');
+    console.log('Your plan has been canceled.');
   };
 
   const handleAddPaymentMethod = () => {
-    alert('Add payment method');
+    console.log('Add payment method');
+  };
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Tax Invoice", 20, 20);
+    doc.text(`Plan: ${selectedPlan.name}`, 20, 30);
+    doc.text(`Price: ${selectedPlan.price}`, 20, 40);
+    doc.text(`Renewal Date: ${selectedPlan.renewalDate}`, 20, 50);
+    doc.text("Billing History:", 20, 60);
+
+    billingRecords.forEach((record, index) => {
+      doc.text(`Email: ${record.email}`, 20, 70 + index * 10);
+      doc.text(`Due Date: ${new Date(record.dueDate).toLocaleDateString()}`, 20, 80 + index * 10);
+      doc.text(`Message: ${record.message}`, 20, 90 + index * 10);
+      doc.text(`Subtotal: ${record.amount}`, 20, 100 + index * 10);
+    });
+
+    doc.save("billing_info.pdf");
   };
 
   return (
@@ -70,7 +88,7 @@ const Billing: React.FC = () => {
         <p>Renewal Date: {selectedPlan.renewalDate}</p>
         <RButton
           type="submit"
-          buttonText='Cancel Plan'
+          buttonText="Cancel Plan"
           onClick={handleCancelPlan}
         />
 
@@ -84,6 +102,7 @@ const Billing: React.FC = () => {
           </select>
         </div>
       </div>
+
       <div className={styles.paymentMethods}>
         <h3>Payment Method</h3>
         <select>
@@ -96,11 +115,12 @@ const Billing: React.FC = () => {
 
         <RButton
           type="submit"
-          buttonText='Add Payment'
+          buttonText="Add Payment"
           onClick={handleAddPaymentMethod}
           className={styles.paymentButton}
         />
       </div>
+
       <div className={styles.billingHistory}>
         <div className={styles.billingText}>
           <h3>Billing History</h3>
@@ -108,7 +128,6 @@ const Billing: React.FC = () => {
         <table>
           <thead>
             <tr>
-              <th>clientReferenceID</th>
               <th>Email</th>
               <th>Due Date</th>
               <th>Message</th>
@@ -116,22 +135,27 @@ const Billing: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {billingRecords?.map((item, index) => {
-              return (
-                <tr key={index}>
-                  <td>{item.clientReferenceID}</td>
-                  <td>{item.email}</td>
-                  <td>{new Date(item.dueDate).toLocaleDateString()}</td>
-                  <td>{item.message}</td>
-                  <td>{item.amount}</td>
-                </tr>
-              )
-            })}
+            {billingRecords?.map((item, index) => (
+              <tr key={index}>
+                <td>{item.email}</td>
+                <td>{new Date(item.dueDate).toLocaleDateString()}</td>
+                <td>{item.message}</td>
+                <td>{item.amount}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
+
+
+      <RButton
+        type="button"
+        buttonText="Download PDF"
+        onClick={handleDownloadPDF}
+      />
     </div>
   );
 };
 
 export default Billing;
+
