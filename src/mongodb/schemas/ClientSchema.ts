@@ -15,6 +15,9 @@ export interface IClient extends Document {
   cinNumber: string;
   gst: number;
   address: string;
+  contact: number;
+  state: string;
+  panNo: string;
 }
 
 interface Client {
@@ -65,9 +68,57 @@ const clientSchema: Schema = new Schema({
     required: true,
     min: [0, "GST must be a non-negative number."],
   },
-  address: { 
+  address: {
     type: String,
     required: [true, "Address is required."],
+  },
+
+  contact: {
+    type: Number,
+    required: [true, "Contact number is required."],
+    validate: {
+      validator: function (value: number) {
+        const phoneRegex = /^[1-9][0-9]{9}$/;
+        return phoneRegex.test(value.toString());
+      },
+      message: "Invalid contact number format.",
+    },
+  },
+
+  cinNumber: {
+    type: String,
+    required: [true, "CIN number is required."],
+    unique: true,
+    validate: {
+      validator: function (value: string) {
+        const cinRegex = /^[LU]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6}$/;
+        return cinRegex.test(value);
+      },
+      message: "Invalid CIN number format.",
+    },
+  },
+
+  panNo: {
+    type: String,
+    required: [true, "PAN number is required."],
+    unique: true,
+    validate: {
+      validator: function (value: string) {
+        const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+        return panRegex.test(value);
+      },
+      message: "Invalid PAN number format.",
+    },
+  },
+  state: {
+    type: String,
+    required: [true, "State is required."],
+    validate: {
+      validator: function (value: string) {
+        return typeof value === 'string' && value.trim() !== '';
+      },
+      message: "Invalid state. It must be a non-empty string.",
+    },
   },
 
   password: {

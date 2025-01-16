@@ -16,13 +16,13 @@ export async function POST(request: NextRequest) {
     // await connectToDatabase();
     // Parse the request body
     const body = await request.json();
-    const { email, companyName, serviceType, domain, saasProductName, cinNumber, gst, address } = body;
-    console.log('body:',body);
-    
+    const { email, companyName, serviceType, domain, saasProductName, cinNumber, gst, address, contact, state, panNo } = body;
+    console.log('body:', body);
+
     // Validate mandatory fields
-    if (!email || !companyName || !serviceType) {
+    if (!email || !companyName || !serviceType || !cinNumber || !gst || !address || !contact || !state || !panNo) {
       return NextResponse.json(
-        { error: "Missing required fields: email, companyName, or serviceType" },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
@@ -40,8 +40,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Create a new client document
     const newClient = await Client.create({
       email,
       companyName,
@@ -53,6 +51,9 @@ export async function POST(request: NextRequest) {
       cinNumber,
       gst,
       address,
+      contact,
+      state,
+      panNo
     });
 
     if (newClient.email) {
@@ -61,11 +62,11 @@ export async function POST(request: NextRequest) {
         password: CLIENT_PASSWORD,
       })
     }
-    console.log('newClient:',newClient);
+    console.log('newClient:', newClient);
     return NextResponse.json(
       {
         message: "Client created Successfully",
-        // client: newClient,
+
       },
       { status: 201 }
     );
